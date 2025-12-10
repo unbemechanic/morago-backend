@@ -27,9 +27,11 @@ public class User implements UserDetails {
     @GeneratedValue( strategy = GenerationType.AUTO)
     private Long id;
     @NotBlank(message = "First name is required!")
+    @Column(name = "first_name")
     private String firstName;
 
     @NotBlank(message = "Last name is required!")
+    @Column(name = "last_name")
     private String lastName;
 
     @Email(message = "Email should be valid")
@@ -40,9 +42,12 @@ public class User implements UserDetails {
     private String password;
 
     @NotBlank(message = "Phone number is required")
+    @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     @PrePersist
     protected void onCreate() {
@@ -64,6 +69,7 @@ public class User implements UserDetails {
 
     private Set<Role> roles = new HashSet<>();
 
+    @Column(name = "is_verified")
     private Boolean isVerified;
 
     @Override
