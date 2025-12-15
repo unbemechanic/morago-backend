@@ -1,4 +1,4 @@
-package morago.model;
+package morago.model.client;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

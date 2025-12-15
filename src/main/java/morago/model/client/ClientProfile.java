@@ -1,13 +1,13 @@
-package morago.model;
+package morago.model.client;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import morago.model.User;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -24,7 +24,7 @@ public class ClientProfile {
     @JoinColumn(name = "userId")
     private User user;
 
-    private BigDecimal balance;
+    private BigDecimal balance = BigDecimal.ZERO;
     private Boolean isActive;
 
 }
