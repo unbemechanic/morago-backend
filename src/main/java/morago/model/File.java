@@ -3,6 +3,7 @@ package morago.model;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import morago.model.interpreter.InterpreterProfile;
 
 import java.time.LocalDateTime;
 

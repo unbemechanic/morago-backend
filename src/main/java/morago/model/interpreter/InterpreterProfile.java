@@ -1,10 +1,11 @@
-package morago.model;
+package morago.model.interpreter;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import morago.model.User;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -34,5 +35,5 @@ public class InterpreterProfile {
 
     private String level;
     private BigDecimal hourlyRate;
-    private Boolean isActive;
+    private Boolean isActive = false;
 }

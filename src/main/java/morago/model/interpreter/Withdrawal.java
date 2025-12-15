@@ -1,4 +1,4 @@
-package morago.model;
+package morago.model.interpreter;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

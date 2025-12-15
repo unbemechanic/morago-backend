@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 
 @Entity
@@ -21,7 +20,7 @@ public class Role implements GrantedAuthority {
     private String name;
 
     @Override
-    public @Nullable String getAuthority() {
+    public String getAuthority() {
         return name;
     }
 }

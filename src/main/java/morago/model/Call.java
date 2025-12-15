@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import morago.enums.Status;
+import morago.model.client.ClientProfile;
+import morago.model.interpreter.InterpreterProfile;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

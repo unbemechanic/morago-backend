@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import morago.enums.Status;
+import morago.model.client.ClientProfile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
