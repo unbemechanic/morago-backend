@@ -12,6 +12,7 @@ import morago.service.UserService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +28,9 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterRequest> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<RegisterRequest> register(@Valid @RequestBody RegisterRequest request) {
         userService.createNewUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/login")
@@ -43,10 +44,16 @@ public class AuthController {
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE).body(res);
     }
 
+
+
+    @PreAuthorize("hasAnyRole('INTERPRETER', 'CLIENT')")
     @GetMapping("/user")
     public ResponseEntity<?> getUser(Authentication authentication) {
 //        String phoneNumber = authentication.getName();
 //        UserDetails user = userService.loadUserByUsername(phoneNumber);
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User user = customUserDetails.getUser();
         return ResponseEntity.ok(user);
