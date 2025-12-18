@@ -66,7 +66,7 @@ public class JWTService {
         return tokenParse(token, tokenType).getSubject();
     }
     public Set<String> extractUserFromToken(String token, TokenEnum tokenType) {
-        Object st = tokenParse(token, tokenType).get("roles");
+        Object st = tokenParse(token, tokenType).get("authorities");
         if(st instanceof List<?>list) {
             return list.stream().filter(String.class::isInstance).map(String.class::cast).collect(Collectors.toSet());
         }
