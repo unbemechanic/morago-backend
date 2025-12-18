@@ -1,0 +1,124 @@
+package morago.customExceptions;
+
+import jakarta.servlet.http.HttpServletRequest;
+import morago.customExceptions.role.InvalidRoleAssigment;
+import morago.customExceptions.role.InvalidRoleException;
+import morago.dto.exceptions.ApiErrorResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(PhoneNumberAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handlePhoneNumberAlreadyExistsException(
+            PhoneNumberAlreadyExistsException ex,
+            HttpServletRequest request)
+    {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleEnumBindingError(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+        String msg = ex.getMessage();
+
+        if (msg != null && msg.contains("Cannot coerce empty String")) {
+            return build(HttpStatus.BAD_REQUEST,"Role cannot be empty", request);
+        }
+
+        if (msg != null && msg.contains("RoleEnum")) {
+            String invalidRole = extractInvalidEnumValue(msg);
+            return build(HttpStatus.BAD_REQUEST,
+                    "Invalid role: " + invalidRole + " Allowed roles: INTERPRETER, CLIENT",
+                    request);
+        }
+        return build(HttpStatus.BAD_REQUEST, "Malformed request body", request);
+    }
+
+    @ExceptionHandler(InvalidRoleException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidRole(
+            InvalidRoleException ex,
+            HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidRoleAssigment.class)
+    public ResponseEntity<?> handleInvalidRoleAssigment(
+            InvalidRoleAssigment ex,
+            HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidation(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
+        String message = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(err -> err.getDefaultMessage())
+                .findFirst()
+                .orElse("Validation error");
+
+        return build(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleUnexpected(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        return build(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Unexpected server error",
+                request
+        );
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadCredentials(
+            BadCredentialsException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.UNAUTHORIZED,
+                "Bad credentials, invalid username or password, please try again",
+                request);
+    }
+
+
+    // build helper method
+    private ResponseEntity<ApiErrorResponse> build(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity
+                .status(status)
+                .body(ApiErrorResponse.of(status, message, request.getRequestURI()));
+    }
+
+    // helper method to extract role names from msg
+    private String extractInvalidEnumValue(String message) {
+        // Matches: from String "TEACHER"
+        Pattern pattern = Pattern.compile("from String \"(.*?)\"");
+        Matcher matcher = pattern.matcher(message);
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return "UNKNOWN";
+    }
+
+}
+
+

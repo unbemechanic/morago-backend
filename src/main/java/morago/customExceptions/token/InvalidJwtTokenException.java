@@ -1,4 +1,4 @@
-package morago.customExceptions;
+package morago.customExceptions.token;
 
 public class InvalidJwtTokenException extends RuntimeException {
     public InvalidJwtTokenException() {

@@ -4,7 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import morago.customExceptions.ExpiredJwtTokenException;
+import morago.customExceptions.token.ExpiredJwtTokenException;
 import morago.enums.TokenEnum;
 import morago.security.CustomUserDetails;
 import org.springframework.security.core.GrantedAuthority;

@@ -4,7 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import morago.customExceptions.ExpiredJwtTokenException;
+import morago.customExceptions.token.ExpiredJwtTokenException;
 import morago.enums.TokenEnum;
 import morago.service.CustomUserDetailService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,13 +43,13 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String authorizationHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
+
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            token = authorizationHeader.substring(7);
+            String token = authorizationHeader.substring(7);
+
             try {
                 jwtService.validateToken(token, TokenEnum.ACCESS);
-                username = jwtService.extractUsername(token, TokenEnum.ACCESS);
+                String username = jwtService.extractUsername(token, TokenEnum.ACCESS);
                 Set<String> roles = jwtService.extractUserFromToken(token, TokenEnum.ACCESS);
                 UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
 
@@ -66,7 +66,17 @@ public class JwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(usernameToken);
             }catch (ExpiredJwtTokenException exception){
                 SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("""
+                {
+                  "error": "UNAUTHORIZED",
+                  "message": "Access token is expired"
+                }
+                """);
+                return;
             }
+
         }
         filterChain.doFilter(request, response);
     }

@@ -1,9 +1,13 @@
 package morago.service;
 
 import lombok.RequiredArgsConstructor;
+import morago.customExceptions.PhoneNumberAlreadyExistsException;
 import morago.customExceptions.UserNotFoundException;
+import morago.customExceptions.role.InvalidRoleAssigment;
+import morago.customExceptions.role.InvalidRoleException;
 import morago.dto.request.LoginRequest;
 import morago.dto.request.RegisterRequest;
+import morago.enums.RoleEnum;
 import morago.jwt.AuthenticationTokens;
 import morago.jwt.JWTService;
 import morago.model.Role;
@@ -34,17 +38,22 @@ public class UserService{
 
     public void createNewUser(RegisterRequest requestUser) {
         if(userRepository.existsByPhoneNumber(requestUser.getPhoneNumber())){
-            throw new IllegalArgumentException("Phone number already exists");
+            throw new PhoneNumberAlreadyExistsException();
         }
-        String roleName = requestUser.getRoles().name();
-        Role role = roleRepository.findRoleByName(roleName)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid role"));
+        RoleEnum role = requestUser.getRoles();
+
+        if(role == RoleEnum.ADMIN){
+            throw new InvalidRoleAssigment(role.name());
+        }
+
+        Role entityRole = roleRepository.findRoleByName(role.name())
+                .orElseThrow(() -> new InvalidRoleException(role.name()));
         User user = new User();
         user.setFirstName(requestUser.getFirstName());
         user.setLastName(requestUser.getLastName());
         user.setPhoneNumber(requestUser.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(requestUser.getPassword()));
-        user.getRoles().add(role);
+        user.getRoles().add(entityRole);
         user.setIsVerified(false);
         userRepository.save(user);
     }
