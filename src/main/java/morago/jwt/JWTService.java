@@ -6,6 +6,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import morago.customExceptions.token.ExpiredJwtTokenException;
 import morago.enums.TokenEnum;
+import morago.model.Role;
+import morago.model.User;
 import morago.security.CustomUserDetails;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -36,14 +38,14 @@ public class JWTService {
         return (token ==  TokenEnum.ACCESS) ? generateAccessKey() : generateRefreshKey();
     }
 
-    public String generateToken(CustomUserDetails user) {
+    public String generateToken(User user) {
         return Jwts.builder()
                 .issuer(jwtProperties.getIssuer())
-                .subject(user.getUsername())
+                .subject(user.getPhoneNumber())
                 .claim("userId", user.getId())
-                .claim("authorities", user.getAuthorities()
+                .claim("roles", user.getRoles()
                         .stream()
-                        .map(GrantedAuthority::getAuthority)
+                        .map(role -> role.getName())
                         .toList())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessTokenExpireTime()))
@@ -51,10 +53,10 @@ public class JWTService {
                 .compact();
     }
 
-    public String generateRefreshToken(CustomUserDetails user) {
+    public String generateRefreshToken(User user) {
         return Jwts.builder()
                 .issuer(jwtProperties.getIssuer())
-                .subject(user.getUsername())
+                .subject(user.getPhoneNumber())
                 .claim("userId", user.getId())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtProperties.getRefreshTokenExpireTime()))
@@ -66,7 +68,7 @@ public class JWTService {
         return tokenParse(token, tokenType).getSubject();
     }
     public Set<String> extractUserFromToken(String token, TokenEnum tokenType) {
-        Object st = tokenParse(token, tokenType).get("authorities");
+        Object st = tokenParse(token, tokenType).get("roles", List.class);
         if(st instanceof List<?>list) {
             return list.stream().filter(String.class::isInstance).map(String.class::cast).collect(Collectors.toSet());
         }

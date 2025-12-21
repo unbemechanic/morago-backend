@@ -55,7 +55,7 @@ public class WebSecurityConfig  {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/client/**").hasRole("CLIENT")
                         .requestMatchers("/interpreter/**").hasRole("INTERPRETER")
-                        .requestMatchers("/","/auth/register", "/auth/login", "/auth/**").permitAll()
+                        .requestMatchers("/","/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authenticationProvider(authenticationProvider())

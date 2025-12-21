@@ -73,17 +73,17 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, message, request);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleUnexpected(
-            Exception ex,
-            HttpServletRequest request
-    ) {
-        return build(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unexpected server error",
-                request
-        );
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<ApiErrorResponse> handleUnexpected(
+//            Exception ex,
+//            HttpServletRequest request
+//    ) {
+//        return build(
+//                HttpStatus.INTERNAL_SERVER_ERROR,
+//                "Unexpected server error",
+//                request
+//        );
+//    }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiErrorResponse> handleBadCredentials(
