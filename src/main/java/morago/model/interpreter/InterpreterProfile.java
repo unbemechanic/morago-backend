@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import morago.model.User;
+import morago.monitor.Audit;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -15,25 +16,29 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "interpreters")
-public class InterpreterProfile {
+@Table(name = "interpreter_profile")
+public class InterpreterProfile extends Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "interpreterLanguages",
-            joinColumns = @JoinColumn(name = "interpreterId"),
-            inverseJoinColumns = @JoinColumn(name = "languageId")
+            name = "interpreter_languages",
+            joinColumns = @JoinColumn(name = "interpreter_id"),
+            inverseJoinColumns = @JoinColumn(name = "language_id")
     )
     private Set<Language> languages;
 
     private String level;
+
+    @Column(name = "hourly_rate")
     private BigDecimal hourlyRate;
+
+    @Column(name = "is_active")
     private Boolean isActive = false;
 }

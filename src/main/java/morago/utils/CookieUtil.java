@@ -9,7 +9,7 @@ public class CookieUtil {
     private CookieUtil() {}
     public static final String REFRESH_TOKEN = "refresh_token";
 
-    public static ResponseCookie rerfreshCookie(
+    public static ResponseCookie refreshCookie(
             String token, Instant expiresAt, String path, boolean secure, String sameSite
     ){
         long maxAge = Math.max(0, expiresAt.getEpochSecond() - Instant.now().getEpochSecond());

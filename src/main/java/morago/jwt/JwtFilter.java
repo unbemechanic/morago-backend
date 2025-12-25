@@ -39,7 +39,11 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.equals("/auth/login") || path.equals("/auth/register");
+        return path.equals("/auth/login") ||
+                path.equals("/auth/register") ||
+                path.startsWith("/v3api-docs/**") ||
+                path.startsWith("/swagger-ui/**") ||
+                path.startsWith("/swagger-ui.html");
     }
 
     @Override
@@ -58,6 +62,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
 
                 List<GrantedAuthority> authorities = roles.stream()
+                        .map(r -> "ROLE_" + r)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
