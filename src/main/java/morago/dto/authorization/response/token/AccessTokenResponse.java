@@ -1,4 +1,4 @@
-package morago.dto.response.token;
+package morago.dto.authorization.response.token;
 
 
 import lombok.AllArgsConstructor;

@@ -8,17 +8,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import morago.dto.request.LoginRequest;
-import morago.dto.request.RegisterRequest;
-import morago.dto.response.AuthResponse;
-import morago.dto.response.token.AccessTokenResponse;
+import morago.customExceptions.token.ExpiredJwtTokenException;
+import morago.customExceptions.token.RefreshTokenNotFoundException;
+import morago.dto.authorization.request.LoginRequest;
+import morago.dto.authorization.request.RegisterRequest;
+import morago.dto.authorization.response.AuthResponse;
+import morago.dto.authorization.response.token.AccessTokenResponse;
 import morago.jwt.AuthenticationTokens;
 import morago.jwt.RotatedTokens;
-import morago.model.User;
-import morago.security.CustomUserDetails;
 import morago.service.UserService;
 import morago.service.token.RefreshTokenService;
 import morago.utils.CookieUtil;
@@ -143,12 +141,19 @@ public class AuthController {
             }
     )
     @PostMapping("/token/refresh")
-    public ResponseEntity<AccessTokenResponse> refreshToken(@CookieValue(name = CookieUtil.REFRESH_TOKEN) String refreshToken) {
+    public ResponseEntity<AccessTokenResponse> refreshToken(
+            @CookieValue(name = CookieUtil.REFRESH_TOKEN, required = false)
+            String refreshToken) {
         if (refreshToken == null ||  refreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        RotatedTokens rotatedTokens = refreshTokenService.refreshTokens(refreshToken);
+        RotatedTokens rotatedTokens;
+        try{
+            rotatedTokens = refreshTokenService.refreshTokens(refreshToken);
+        }catch (RefreshTokenNotFoundException | ExpiredJwtTokenException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         ResponseCookie cookie = CookieUtil.refreshCookie(
                 rotatedTokens.newRefreshToken(),

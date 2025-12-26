@@ -1,8 +1,12 @@
 package morago.customExceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
+import morago.customExceptions.call.CallTopicExistsException;
+import morago.customExceptions.password.*;
 import morago.customExceptions.role.InvalidRoleAssigment;
 import morago.customExceptions.role.InvalidRoleException;
+import morago.customExceptions.token.ExpiredJwtTokenException;
+import morago.customExceptions.token.RefreshTokenNotFoundException;
 import morago.dto.exceptions.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -95,6 +99,79 @@ public class GlobalExceptionHandler {
                 request);
     }
 
+    @ExceptionHandler(CallTopicExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleCallTopicExistsException(
+            CallTopicExistsException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    // Refresh token
+    @ExceptionHandler(RefreshTokenNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleRefreshTokenNotFoundException(
+            HttpServletRequest request,
+            RefreshTokenNotFoundException ex
+    ){
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ExpiredJwtTokenException.class)
+    public ResponseEntity<ApiErrorResponse> handleExpiredJwtTokenException(
+            ExpiredJwtTokenException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleUserNotFoundException(
+            UserNotFoundException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    // Password reset
+    @ExceptionHandler(MissingResetFieldsException.class)
+    public ResponseEntity<ApiErrorResponse> handleMissingResetFieldsException(
+            MissingResetFieldsException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidResetCodeException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidResetCodeException(
+            InvalidResetCodeException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ResetPasswordTokenMissingException.class)
+    public ResponseEntity<ApiErrorResponse> handleResetPasswordTokenMissingException(
+            ResetPasswordTokenMissingException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(PasswordRequiredException.class)
+    public ResponseEntity<ApiErrorResponse> handlePasswordRequiredException(
+            PasswordRequiredException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(PasswordMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handlePasswordMismatchException(
+            PasswordMismatchException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
 
     // build helper method
     private ResponseEntity<ApiErrorResponse> build(

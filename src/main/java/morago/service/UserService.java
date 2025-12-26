@@ -1,12 +1,15 @@
 package morago.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import morago.customExceptions.PhoneNumberAlreadyExistsException;
 import morago.customExceptions.UserNotFoundException;
+import morago.customExceptions.password.PasswordMismatchException;
+import morago.customExceptions.password.PasswordRequiredException;
 import morago.customExceptions.role.InvalidRoleAssigment;
 import morago.customExceptions.role.InvalidRoleException;
-import morago.dto.request.LoginRequest;
-import morago.dto.request.RegisterRequest;
+import morago.dto.authorization.request.LoginRequest;
+import morago.dto.authorization.request.RegisterRequest;
 import morago.enums.RoleEnum;
 import morago.enums.TokenEnum;
 import morago.jwt.AuthenticationTokens;
@@ -15,6 +18,7 @@ import morago.model.Role;
 import morago.model.User;
 import morago.repository.RoleRepository;
 import morago.repository.UserRepository;
+import morago.repository.token.RefreshTokenRepository;
 import morago.security.CustomUserDetails;
 import morago.service.token.RefreshTokenService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,6 +44,7 @@ public class UserService{
     private final RefreshTokenService refreshTokenService;
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public User findByUsernameOrThrow(String username) {
         return userRepository.getByPhoneNumber(username)
@@ -52,9 +57,13 @@ public class UserService{
         }
         RoleEnum role = requestUser.getRoles();
 
-        /*if(role == RoleEnum.ADMIN){
+        if(role == RoleEnum.ADMIN){
             throw new InvalidRoleAssigment(role.name());
-        }*/
+        }
+
+        if (role != RoleEnum.CLIENT && role != RoleEnum.INTERPRETER) {
+            throw new InvalidRoleAssigment(role.name());
+        }
 
         Role entityRole = roleRepository.findRoleByName(role.name())
                 .orElseThrow(() -> new InvalidRoleException(role.name()));
@@ -81,6 +90,9 @@ public class UserService{
         String refreshToken = jwtService.generateRefreshToken(user);
 
         log.info("Tokens generated successfully");
+        authentication.getAuthorities().forEach(a ->
+                log.warn("LOGIN AUTHORITY: {}", a.getAuthority())
+        );
 
         refreshTokenService.createRefreshToken(authenticated.getUsername(), refreshToken);
 
@@ -98,5 +110,37 @@ public class UserService{
                .refreshExpAt(refreshExp)
                .user(authUser)
                .build();
+    }
+
+    public void delete(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    // Password reset
+
+    @Transactional
+    public void setPasswordResetedPassword(Long userId, String newPassword, String confirmNewPassword) {
+        User user = findByIdOrThrow(userId);
+        applyNewPassword(user, newPassword, confirmNewPassword);
+    }
+
+    private void applyNewPassword(User user, String newPassword, String confirmNewPassword) {
+        validPassword(newPassword, confirmNewPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        refreshTokenRepository.deleteByUser(user);
+    }
+
+    private void validPassword(String newPassword, String confirmNewPassword) {
+        if (newPassword == null || newPassword.isEmpty() || confirmNewPassword == null || confirmNewPassword.isEmpty()) {
+            throw new PasswordRequiredException();
+        }
+        if (!newPassword.equals(confirmNewPassword)) {
+            throw new PasswordMismatchException();
+        }
+    }
+
+    private User findByIdOrThrow(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 }

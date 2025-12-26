@@ -21,9 +21,11 @@ import java.time.LocalDateTime;
 public class CallTopic extends Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id")
+    private Long topicId;
 
-    private String name;
+    @Column(name = "name")
+    private String topicName;
 
     @Column(name = "is_active")
     private Boolean isActive;

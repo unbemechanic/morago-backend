@@ -1,4 +1,4 @@
-package morago.model;
+package morago.model.client;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import morago.enums.Status;
-import morago.model.client.ClientProfile;
 import morago.monitor.Audit;
 
 import java.math.BigDecimal;

@@ -1,4 +1,4 @@
-package morago.dto.response;
+package morago.dto.authorization.response;
 
 import lombok.*;
 import morago.model.User;
