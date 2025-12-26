@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import morago.enums.Status;
+import morago.monitor.Audit;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,13 +17,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "deposits")
-public class Deposit {
+public class Deposit extends Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "clientProfileId")
+    @JoinColumn(name = "client_profile_id")
     private ClientProfile clientProfile;
 
     private String note;
@@ -31,6 +32,10 @@ public class Deposit {
     private Status status;
 
     private BigDecimal amount;
+
+    @Column(name = "deposited_at")
     private LocalDateTime depositAt;
+
+    @Column(name = "processed_at")
     private LocalDateTime processedAt;
 }

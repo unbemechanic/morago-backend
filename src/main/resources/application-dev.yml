@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: morago
+
+  flyway:
+    baseline-on-migrate: false
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+
+server:
+  forward-headers-strategy: framework
+

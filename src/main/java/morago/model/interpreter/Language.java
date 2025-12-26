@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import morago.monitor.Audit;
 
 import java.time.LocalDateTime;
 
@@ -14,23 +15,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "languages")
-public class Language {
+public class Language extends Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    @PrePersist
-    protected void onCreate()
-    {
-        createdAt = LocalDateTime.now();
-    }
-    @PreUpdate
-    protected void onUpdate()
-    {
-        updatedAt = LocalDateTime.now();
-    }
 }

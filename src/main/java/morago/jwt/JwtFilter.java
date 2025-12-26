@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import morago.customExceptions.token.ExpiredJwtTokenException;
 import morago.enums.TokenEnum;
 import morago.service.CustomUserDetailService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,10 +34,16 @@ public class JwtFilter extends OncePerRequestFilter {
         this.customUserDetailService = customUserDetailService;
     }
 
+    private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.equals("/auth/login") || path.equals("/auth/register");
+        return path.equals("/auth/login") ||
+                path.equals("/auth/register") ||
+                path.startsWith("/v3api-docs/**") ||
+                path.startsWith("/swagger-ui/**") ||
+                path.startsWith("/swagger-ui.html");
     }
 
     @Override
@@ -54,8 +62,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
 
                 List<GrantedAuthority> authorities = roles.stream()
+                        .map(r -> "ROLE_" + r)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
+
+                log.info("JWT roles claim: {}", authorities);
 
                 UsernamePasswordAuthenticationToken usernameToken =
                         new UsernamePasswordAuthenticationToken(

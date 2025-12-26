@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import morago.enums.Status;
+import morago.monitor.Audit;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -16,25 +17,14 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "callTopics")
-public class CallTopic {
+@Table(name = "call_topics")
+public class CallTopic extends Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
+    @Column(name = "is_active")
     private Boolean isActive;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-    }
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

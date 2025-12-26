@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import morago.model.User;
+import morago.monitor.Audit;
 
 import java.math.BigDecimal;
 
@@ -14,17 +15,18 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Setter
 @Getter
-@Table(name = "clientProfile")
-public class ClientProfile {
+@Table(name = "client_profile")
+public class ClientProfile extends Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     private BigDecimal balance = BigDecimal.ZERO;
+    @Column(name = "is_active")
     private Boolean isActive;
 
 }

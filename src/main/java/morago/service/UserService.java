@@ -8,6 +8,7 @@ import morago.customExceptions.role.InvalidRoleException;
 import morago.dto.request.LoginRequest;
 import morago.dto.request.RegisterRequest;
 import morago.enums.RoleEnum;
+import morago.enums.TokenEnum;
 import morago.jwt.AuthenticationTokens;
 import morago.jwt.JWTService;
 import morago.model.Role;
@@ -15,12 +16,18 @@ import morago.model.User;
 import morago.repository.RoleRepository;
 import morago.repository.UserRepository;
 import morago.security.CustomUserDetails;
+import morago.service.token.RefreshTokenService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +37,9 @@ public class UserService{
     private final JWTService jwtService;
     private final RoleRepository roleRepository;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     public User findByUsernameOrThrow(String username) {
         return userRepository.getByPhoneNumber(username)
@@ -42,9 +52,9 @@ public class UserService{
         }
         RoleEnum role = requestUser.getRoles();
 
-        if(role == RoleEnum.ADMIN){
+        /*if(role == RoleEnum.ADMIN){
             throw new InvalidRoleAssigment(role.name());
-        }
+        }*/
 
         Role entityRole = roleRepository.findRoleByName(role.name())
                 .orElseThrow(() -> new InvalidRoleException(role.name()));
@@ -57,21 +67,36 @@ public class UserService{
         user.setIsVerified(false);
         userRepository.save(user);
     }
-    public AuthenticationTokens verify(LoginRequest loginRequest) {
+    public AuthenticationTokens verify( LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
                                 loginRequest.getPhoneNumber(),
                                 loginRequest.getPassword())
         );
-        UserDetails authenticated = (UserDetails) authentication.getPrincipal();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        CustomUserDetails authenticated = (CustomUserDetails) authentication.getPrincipal();
+        User user = authenticated.getUser();
 
-        String accessToken = jwtService.generateToken((CustomUserDetails) authenticated);
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
-        User user = findByUsernameOrThrow(authenticated.getUsername());
+        log.info("Tokens generated successfully");
+
+        refreshTokenService.createRefreshToken(authenticated.getUsername(), refreshToken);
+
+        log.info("Refresh token saved");
+
+        User authUser = findByUsernameOrThrow(authenticated.getUsername());
+
+        Instant refreshExp = jwtService.getExpInstant(refreshToken, TokenEnum.REFRESH);
+
+        log.info("Refresh token expiration extracted");
 
        return AuthenticationTokens.builder()
                .accessToken(accessToken)
-               .user(user)
+               .refreshToken(refreshToken)
+               .refreshExpAt(refreshExp)
+               .user(authUser)
                .build();
     }
 }
