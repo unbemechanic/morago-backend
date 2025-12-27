@@ -2,7 +2,6 @@ package morago.jwt;
 
 import lombok.Builder;
 import lombok.Getter;
-import morago.dto.request.RegisterRequest;
 import morago.model.User;
 
 import java.time.Instant;

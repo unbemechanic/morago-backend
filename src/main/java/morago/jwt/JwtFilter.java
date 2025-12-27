@@ -62,7 +62,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
 
                 List<GrantedAuthority> authorities = roles.stream()
-                        .map(r -> "ROLE_" + r)
+                        .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 

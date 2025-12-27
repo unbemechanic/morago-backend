@@ -1,4 +1,4 @@
-package morago.dto.request;
+package morago.dto.authorization.request;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

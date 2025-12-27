@@ -26,7 +26,4 @@ public class Role extends Audit implements GrantedAuthority{
     public String getAuthority() {
         return name;
     }
-
-    @Column(name = "create_at")
-    private LocalDateTime createdAt;
 }

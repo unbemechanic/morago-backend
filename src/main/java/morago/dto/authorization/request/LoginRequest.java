@@ -1,4 +1,4 @@
-package morago.dto.request;
+package morago.dto.authorization.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
