@@ -40,6 +40,7 @@ public class PasswordController {
     @PostMapping("/reset/request")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void request(@RequestBody PasswordResetRequest dto) {
+        log.info("Password reset requested for {}", dto);
         passwordResetService.startReset(dto.phone());
     }
 
@@ -59,6 +60,7 @@ public class PasswordController {
     @PostMapping("/reset/verify")
     public Map<String, String> verify(@Valid @RequestBody PasswordResetVerityRequest dto) {
         String token = passwordResetService.verifyCode(dto.phoneNumber(), dto.code());
+        log.info("Password reset verity requested for {}", dto);
         return Map.of("token", token);
     }
 
@@ -78,6 +80,7 @@ public class PasswordController {
     @PostMapping("/reset/confirm")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void confirm(@Valid @RequestBody PasswordResetConfirmRequest dto) {
+        log.info("Password reset confirm for {} completed successfully", dto);
         passwordResetService.confirmReset(dto.token(), dto.newPassword(), dto.newConfirmPassword());
     }
 }

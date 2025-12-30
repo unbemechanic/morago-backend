@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import morago.enums.Status;
+import morago.enums.WithdrawalStatus;
 import morago.monitor.Audit;
 
 import java.math.BigDecimal;
@@ -24,7 +24,7 @@ public class Withdrawal extends Audit {
     private Long id;
 
     @ManyToOne
-    @JoinTable(name = "interpreter_profile_id")
+    @JoinColumn(name = "interpreter_profile_id")
     private InterpreterProfile interpreterProfile;
 
     @Column(name = "requested_amount")
@@ -32,7 +32,7 @@ public class Withdrawal extends Audit {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status;
+    private WithdrawalStatus status;
 
     @NotBlank
     @Column(name = "withdrawal_account")

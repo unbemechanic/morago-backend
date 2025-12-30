@@ -12,4 +12,6 @@ public interface CallTopicRepository extends JpaRepository<CallTopic, Long> {
     Optional<CallTopic> findByTopicName(String topicName);
 
     boolean existsByTopicName(String name);
+
+    boolean existsByTopicNameIgnoreCaseAndTopicIdNot(String newName, Long topicId);
 }

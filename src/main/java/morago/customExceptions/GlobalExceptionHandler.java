@@ -2,9 +2,15 @@ package morago.customExceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
 import morago.customExceptions.call.CallTopicExistsException;
+import morago.customExceptions.call.CallTopicNotFoundException;
+import morago.customExceptions.call.NoCallTopicFoundException;
+import morago.customExceptions.interpreter.NoInterpreterFoundException;
+import morago.customExceptions.language.InvalidLanguageException;
+import morago.customExceptions.language.LanguageExistsException;
 import morago.customExceptions.password.*;
 import morago.customExceptions.role.InvalidRoleAssigment;
 import morago.customExceptions.role.InvalidRoleException;
+import morago.customExceptions.role.RoleNotFoundException;
 import morago.customExceptions.token.ExpiredJwtTokenException;
 import morago.customExceptions.token.RefreshTokenNotFoundException;
 import morago.dto.exceptions.ApiErrorResponse;
@@ -61,6 +67,14 @@ public class GlobalExceptionHandler {
             InvalidRoleAssigment ex,
             HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleRoleNotFoundException(
+            RoleNotFoundException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -172,6 +186,58 @@ public class GlobalExceptionHandler {
     ){
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
+
+    @ExceptionHandler(WeakPasswordException.class)
+    public ResponseEntity<ApiErrorResponse> handleWeakPasswordException(
+            WeakPasswordException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    // Call topics
+    @ExceptionHandler(CallTopicNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleCallTopicNotFoundException(
+            CallTopicNotFoundException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(NoCallTopicFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNoCallTopicFoundException(
+            NoCallTopicFoundException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    // Language exceptions
+    @ExceptionHandler(LanguageExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleLanguageExistsException(
+            LanguageExistsException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidLanguageException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidLanguageException(
+            InvalidLanguageException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    // Interpreter Profile
+    @ExceptionHandler(NoInterpreterFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNoInterpreterFoundException(
+            NoInterpreterFoundException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
 
     // build helper method
     private ResponseEntity<ApiErrorResponse> build(

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import morago.customExceptions.token.ExpiredJwtTokenException;
 import morago.customExceptions.token.RefreshTokenNotFoundException;
 import morago.dto.authorization.request.LoginRequest;
@@ -29,6 +30,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Tag(name = "Authentication", description = "Register, login, refresh, logout")
 @RestController
 @RequestMapping("/auth")
@@ -58,7 +60,9 @@ public class AuthController {
     )
     @PostMapping("/register")
     public ResponseEntity<RegisterRequest> register(@Valid @RequestBody RegisterRequest request) {
+        log.info("REGISTER attempt by phoneNumber={}", request.getPhoneNumber());
         userService.createNewUser(request);
+        log.info("REGISTER completed successfully phoneNumber={}", request.getPhoneNumber());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -103,11 +107,14 @@ public class AuthController {
     )
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        log.info("LOGIN attempt by phoneNumber={}", request.getPhoneNumber());
         AuthenticationTokens authTokens = userService.verify(request);
 
         boolean secure = false;
         String sameSite = "Lax";
         String path = "/auth";
+
+        log.info("LOGIN completed successfully phoneNumber={}", request.getPhoneNumber());
 
         ResponseCookie cookie = CookieUtil.refreshCookie(
                 authTokens.getRefreshToken(),
@@ -145,13 +152,16 @@ public class AuthController {
             @CookieValue(name = CookieUtil.REFRESH_TOKEN, required = false)
             String refreshToken) {
         if (refreshToken == null ||  refreshToken.isBlank()) {
+            log.warn("REFRESH_TOKEN cookie is empty");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         RotatedTokens rotatedTokens;
         try{
             rotatedTokens = refreshTokenService.refreshTokens(refreshToken);
+            log.info("REFRESH_TOKEN rotated successfully");
         }catch (RefreshTokenNotFoundException | ExpiredJwtTokenException e){
+            log.warn("REFRESH_TOKEN rejected: {}", e.getClass().getSimpleName());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -184,7 +194,10 @@ public class AuthController {
             @CookieValue(name = CookieUtil.REFRESH_TOKEN, required = false ) String refreshToken)
     {
         String username = authentication.getName();
+        log.info("Logout requested by phoneNumber={}", username);
         refreshTokenService.logout(username, refreshToken);
+
+        log.info("Logout completed successfully");
 
         ResponseCookie delete = CookieUtil.deleteRefreshCookie(
                 "/auth",

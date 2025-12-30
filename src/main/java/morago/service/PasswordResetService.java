@@ -48,6 +48,7 @@ public class PasswordResetService {
     @Transactional
     public void startReset(String phone){
         final User user = userService.findByUsernameOrThrow(phone);
+        log.info("Starting password reset for {}", phone);
 
 
         passwordResetRepository.invalidateAllActiveByUser(user, LocalDateTime.now());
@@ -62,12 +63,14 @@ public class PasswordResetService {
                 .codeVerified(false)
                 .build();
 
+        log.info("Password reset for {}", phone);
         passwordResetRepository.save(pr);
     }
 
     @Transactional
     public String verifyCode(String phoneNumber, Integer code){
         if (!userRepository.existsByPhoneNumber(phoneNumber)){
+            log.warn("Phone number not found for {}", phoneNumber);
             throw new UserNotFoundException();
         }
 
@@ -79,11 +82,8 @@ public class PasswordResetService {
                 .orElseThrow(InvalidResetCodeException::new);
 
         if(!isDev && !code.equals(passwordReset.getResetCode())){
+            log.warn("Reset code is invalid");
             throw new InvalidResetCodeException();
-        }
-
-        if (envProfileDev() && VERIFICATION_CODE.equals(code)) {
-            log.warn("DEV MASTER OTP used for {}", phoneNumber);
         }
 
         passwordReset.setCodeVerified(true);
@@ -101,10 +101,12 @@ public class PasswordResetService {
     @Transactional
     public void confirmReset(String token, String newPassword, String newConfirmPassword){
         if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()){
+            log.warn("Invalid token or new password or new confirm password");
             throw new MissingResetFieldsException();
         }
 
         if (!passwordResetRepository.existsByToken(token)){
+            log.warn("Password Reset Token not found");
             throw new ResetPasswordTokenMissingException();
         }
         final LocalDateTime now = LocalDateTime.now();
@@ -115,6 +117,7 @@ public class PasswordResetService {
         if (Boolean.TRUE.equals(passwordReset.getUsed())
         || passwordReset.getExpiresAt().isBefore(now)
                 || !Boolean.TRUE.equals(passwordReset.getCodeVerified())) {
+            log.warn("Password Reset Token has expired");
             throw new InvalidResetCodeException();
         }
 
@@ -125,6 +128,7 @@ public class PasswordResetService {
         passwordReset.setUsed(true);
         passwordReset.setToken(null);
 
+        log.info("Password reset for {} completed successfully", newPassword);
         passwordResetRepository.save(passwordReset);
         passwordResetRepository.invalidateAllActiveByUser(user, now);
     }

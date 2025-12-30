@@ -44,6 +44,15 @@ public class WebSecurityConfig  {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/",
+            "/auth/**",
+            "/auth/password/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -52,15 +61,10 @@ public class WebSecurityConfig  {
                 .csrf(c -> c.disable())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(r -> r
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/client/**").hasRole("CLIENT")
                         .requestMatchers("/interpreter/**").hasRole("INTERPRETER")
-                        .requestMatchers("/","/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authenticationProvider(authenticationProvider())
