@@ -23,7 +23,7 @@ public class AdminAuditAspect {
 
         audit.info(
                 "ADMIN_ACTION admin={} method={}",
-                audit,
+                admin,
                 joinPoint.getSignature().getName()
         );
     }
