@@ -5,4 +5,5 @@ public class CallTopicNotFoundException extends RuntimeException {
         super("No call topic found with id " + id);
     }
     public CallTopicNotFoundException(String topicName) {super("No call topic found with name " + topicName);}
+    public CallTopicNotFoundException() {super("No call topic found");}
 }

@@ -6,6 +6,7 @@ import morago.customExceptions.PhoneNumberAlreadyExistsException;
 import morago.customExceptions.UserNotFoundException;
 import morago.customExceptions.password.PasswordMismatchException;
 import morago.customExceptions.password.PasswordRequiredException;
+import morago.customExceptions.password.WeakPasswordException;
 import morago.customExceptions.role.InvalidRoleAssigment;
 import morago.customExceptions.role.InvalidRoleException;
 import morago.dto.authorization.request.LoginRequest;
@@ -21,6 +22,7 @@ import morago.repository.UserRepository;
 import morago.repository.token.RefreshTokenRepository;
 import morago.security.CustomUserDetails;
 import morago.service.token.RefreshTokenService;
+import morago.utils.PasswordValidator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -91,18 +93,14 @@ public class UserService{
 
         log.info("Tokens generated successfully");
         authentication.getAuthorities().forEach(a ->
-                log.warn("LOGIN AUTHORITY: {}", a.getAuthority())
+                log.info("LOGIN AUTHORITY: {}", a.getAuthority())
         );
 
         refreshTokenService.createRefreshToken(authenticated.getUsername(), refreshToken);
 
-        log.info("Refresh token saved");
-
         User authUser = findByUsernameOrThrow(authenticated.getUsername());
 
         Instant refreshExp = jwtService.getExpInstant(refreshToken, TokenEnum.REFRESH);
-
-        log.info("Refresh token expiration extracted");
 
        return AuthenticationTokens.builder()
                .accessToken(accessToken)
@@ -133,10 +131,16 @@ public class UserService{
 
     private void validPassword(String newPassword, String confirmNewPassword) {
         if (newPassword == null || newPassword.isEmpty() || confirmNewPassword == null || confirmNewPassword.isEmpty()) {
+            log.warn("New password or confirm password is empty");
             throw new PasswordRequiredException();
         }
         if (!newPassword.equals(confirmNewPassword)) {
+            log.warn("Passwords do not match");
             throw new PasswordMismatchException();
+        }
+        if (!PasswordValidator.isValid(newPassword)) {
+            log.warn("New password is not valid");
+            throw new WeakPasswordException();
         }
     }
 

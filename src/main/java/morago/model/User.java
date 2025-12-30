@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import morago.model.client.ClientProfile;
+import morago.model.interpreter.InterpreterProfile;
 import morago.monitor.Audit;
 
 import java.math.BigDecimal;
@@ -53,4 +55,10 @@ public class User extends Audit {
 
     @Column(name = "is_verified")
     private Boolean isVerified = false;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ClientProfile clientProfile;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private InterpreterProfile interpreterProfile;
 }
