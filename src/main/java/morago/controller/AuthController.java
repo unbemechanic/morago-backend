@@ -15,6 +15,7 @@ import morago.customExceptions.token.RefreshTokenNotFoundException;
 import morago.dto.authorization.request.LoginRequest;
 import morago.dto.authorization.request.RegisterRequest;
 import morago.dto.authorization.response.AuthResponse;
+import morago.dto.authorization.response.UserDto;
 import morago.dto.authorization.response.token.AccessTokenResponse;
 import morago.jwt.AuthenticationTokens;
 import morago.jwt.RotatedTokens;
@@ -112,7 +113,7 @@ public class AuthController {
 
         boolean secure = false;
         String sameSite = "Lax";
-        String path = "/auth";
+        String path = "/";
 
         log.info("LOGIN completed successfully phoneNumber={}", request.getPhoneNumber());
 
@@ -125,7 +126,8 @@ public class AuthController {
         );
 
         AuthResponse res = AuthResponse.builder()
-                .accessToken(authTokens.getAccessToken()).user(authTokens.getUser())
+                .accessToken(authTokens.getAccessToken())
+                .user(authTokens.getUser())
                 .build();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(res);
     }

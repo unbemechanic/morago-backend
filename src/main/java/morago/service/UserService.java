@@ -11,6 +11,7 @@ import morago.customExceptions.role.InvalidRoleAssigment;
 import morago.customExceptions.role.InvalidRoleException;
 import morago.dto.authorization.request.LoginRequest;
 import morago.dto.authorization.request.RegisterRequest;
+import morago.enums.NotificationType;
 import morago.enums.RoleEnum;
 import morago.enums.TokenEnum;
 import morago.jwt.AuthenticationTokens;
@@ -37,6 +38,7 @@ import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -47,6 +49,7 @@ public class UserService{
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final RefreshTokenRepository refreshTokenRepository;
+    private final NotificationService notificationService;
 
     public User findByUsernameOrThrow(String username) {
         return userRepository.getByPhoneNumber(username)
@@ -77,6 +80,8 @@ public class UserService{
         user.getRoles().add(entityRole);
         user.setIsVerified(false);
         userRepository.save(user);
+
+        notifyAdminUserCreated(user);
     }
     public AuthenticationTokens verify( LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
@@ -146,5 +151,24 @@ public class UserService{
 
     private User findByIdOrThrow(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    // Notification
+    private void notifyAdminUserCreated(User user) {
+        Long adminId = findAdminId();
+
+        notificationService.notifyUser(
+                adminId,
+                NotificationType.ADMIN_NEW_USER,
+                "New user registered: " + user.getPhoneNumber()
+        );
+    }
+
+    private Long findAdminId() {
+        return userRepository
+                .findFirstByRoles_Name(RoleEnum.ADMIN.name())
+                .orElseThrow(() -> new RuntimeException("Admin not found"))
+                .getId();
+
     }
 }

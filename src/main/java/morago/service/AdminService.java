@@ -15,12 +15,14 @@ import morago.customExceptions.language.NoLanguageFoundException;
 import morago.customExceptions.password.WeakPasswordException;
 import morago.customExceptions.role.RoleNotFoundException;
 import morago.dto.admin.*;
+import morago.dto.admin.client.ClientProfileDto;
 import morago.dto.admin.client.CreateClientRequestDto;
 import morago.dto.admin.interpreter.AdminIPResponseDto;
 import morago.dto.admin.interpreter.AdminInterpreterProfileRequestDto;
 import morago.dto.admin.interpreter.SingleInterpreterProfileDto;
 import morago.dto.call.topic.CallTopicDto;
 import morago.dto.language.LanguageRequestDto;
+import morago.dto.notification.NotificationDto;
 import morago.mapper.CallMapper;
 import morago.mapper.UserMapper;
 import morago.mapper.WithdrawalMapper;
@@ -39,7 +41,9 @@ import morago.repository.call.CallRepository;
 import morago.repository.call.CallTopicRepository;
 import morago.utils.PasswordValidator;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +69,7 @@ public class AdminService {
     private final WithdrawalMapper withdrawalMapper;
     private final DepositRepository depositRepository;
     private final ClientRepository clientRepository;
+    private final NotificationRepository notificationRepository;
 
     // Get all users
     public Page<UserResponseDto> findAllUsers(Pageable pageable) {
@@ -189,6 +194,10 @@ public class AdminService {
         clientRepository.save(clientProfile);
     }
 
+    public Page<ClientProfileDto> findAllClientProfiles(Pageable pageable) {
+        return clientRepository.findAll(pageable).map(ClientProfileDto::from);
+    }
+
     // Call topics
     public Optional<CallTopic> findById(Long id) {
         if (!callTopicRepository.existsById(id)) {
@@ -290,6 +299,16 @@ public class AdminService {
             throw new NoLanguageFoundException();
         }
         languageRepository.deleteById(id);
+    }
+
+    // Notification
+    public List<NotificationDto> getAdminNotifications(){
+
+        return notificationRepository.findByUser_Roles_Name("ADMIN")
+                .stream()
+                .map(NotificationDto::from)
+                .toList();
+
     }
 
     // Aggregation method

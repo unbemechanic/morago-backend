@@ -1,6 +1,7 @@
 package morago.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,12 +42,12 @@ public class User extends Audit {
     private BigDecimal balance = BigDecimal.ZERO;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("users")
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-
     private Set<Role> roles = new HashSet<>();
 
     public void setRole(Role role){
@@ -57,8 +58,10 @@ public class User extends Audit {
     private Boolean isVerified = false;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private ClientProfile clientProfile;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private InterpreterProfile interpreterProfile;
 }
