@@ -172,6 +172,13 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/user/update/{id}")
+    public ResponseEntity<Void> updateUserStatus(@PathVariable Long id, @RequestBody StatusUpdateDto status){
+        auditLog.info("ADMIN_UPDATE_USER userId={}", id);
+        adminService.updateUserIsVerified(id, status.getStatus());
+        return ResponseEntity.noContent().build();
+    }
+
 
     // Call topic + Finished
     @Operation(

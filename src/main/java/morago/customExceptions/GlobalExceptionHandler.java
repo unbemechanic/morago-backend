@@ -3,6 +3,7 @@ package morago.customExceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import morago.customExceptions.call.*;
 import morago.customExceptions.interpreter.NoInterpreterFoundException;
+import morago.customExceptions.interpreter.ProfileExistsException;
 import morago.customExceptions.language.InvalidLanguageException;
 import morago.customExceptions.language.LanguageExistsException;
 import morago.customExceptions.password.*;
@@ -248,6 +249,14 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ){
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ProfileExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleProfileExistsException(
+            ProfileExistsException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
 

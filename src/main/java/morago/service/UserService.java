@@ -80,7 +80,7 @@ public class UserService{
         user.setIsVerified(false);
         userRepository.save(user);
 
-        notifyAdminUserCreated(user);
+        notificationService.notifyAdminUserCreated(user);
     }
     public AuthenticationTokens verify( LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
@@ -152,22 +152,5 @@ public class UserService{
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    // Notification
-    private void notifyAdminUserCreated(User user) {
-        Long adminId = findAdminId();
 
-        notificationService.notifyUser(
-                adminId,
-                NotificationType.ADMIN_NEW_USER,
-                "New user registered: " + user.getPhoneNumber()
-        );
-    }
-
-    private Long findAdminId() {
-        return userRepository
-                .findFirstByRoles_Name(RoleEnum.ADMIN.name())
-                .orElseThrow(() -> new RuntimeException("Admin not found"))
-                .getId();
-
-    }
 }

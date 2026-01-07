@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface InterpreterProfileRepository extends JpaRepository<InterpreterProfile, Long> {
     Optional<InterpreterProfile> findByUserId(Long userId);
+
+    boolean existsByUserId(Long userId);
 }

@@ -1,10 +1,7 @@
 package morago.model.interpreter;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import morago.enums.TopikLevel;
 import morago.model.Call;
 import morago.model.CallTopic;
@@ -20,6 +17,7 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "interpreter_profile")
