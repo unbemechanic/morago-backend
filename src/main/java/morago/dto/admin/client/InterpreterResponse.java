@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InterpreterResponse {
-    private String id;
+    private Long id;
     private String firstName;
     private String lastName;
     private String phoneNumber;
@@ -22,6 +22,7 @@ public class InterpreterResponse {
 
     public static InterpreterResponse from(InterpreterProfile profile) {
         return InterpreterResponse.builder()
+                .id(profile.getId())
                 .firstName(profile.getUser().getFirstName())
                 .lastName(profile.getUser().getLastName())
                 .phoneNumber(profile.getUser().getPhoneNumber())

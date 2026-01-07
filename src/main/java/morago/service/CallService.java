@@ -8,7 +8,6 @@ import morago.customExceptions.call.CallTopicNotFoundException;
 import morago.enums.CallState;
 import morago.model.Call;
 import morago.model.CallTopic;
-import morago.model.User;
 import morago.model.client.ClientProfile;
 import morago.model.interpreter.InterpreterProfile;
 import morago.payload.CallEvent;
@@ -27,7 +26,6 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class CallService {
 
-    private static final BigDecimal RATE_PER_SECOND = new BigDecimal("0.05");
 
     private final CallRepository callRepository;
     private final WalletService walletService;
@@ -39,39 +37,71 @@ public class CallService {
 
     public Call create(Long clientProfileId, Long interpreterProfileId, Long callTopicId) {
 
-        User user = userRepository.findById(clientProfileId).orElseThrow(UserNotFoundException::new);
-
-        ClientProfile client = clientRepository.findByUserId(user.getId());
+        ClientProfile client = clientRepository.findByUserId(clientProfileId);
         InterpreterProfile interpreter = interpreterProfileRepository.findById(interpreterProfileId).orElseThrow(UserNotFoundException::new);
         CallTopic topic = callTopicRepository.findByTopicId(callTopicId).orElseThrow(CallTopicNotFoundException::new);
 
         Call call = new Call(client, interpreter, topic);
+        call = callRepository.save(call);
 
         log.info(
-                "Call created clientProfileId={} interpreterProfileId={} topic={}",
+                "Call created callId={} clientProfileId={} interpreterProfileId={} topic={}",
+                call.getId(),
                 clientProfileId,
                 interpreterProfileId,
                 topic
         );
+        //Interpreter receive call notification
+        notifyUser(
+                interpreter.getUser().getId(),
+                new CallEvent(
+                        "INCOMING_CALL",
+                        call.getId(),
+                        interpreterProfileId,
+                        clientProfileId,
+                        client.getUser().getFirstName(),
+                        interpreter.getUser().getLastName()));
 
-        notifyUser(interpreter.getUser().getId(), new CallEvent("CALL_CREATED", call.getId(), user.getId()));
-        return callRepository.save(call);
+        // Client call notification
+        notifyUser(
+                client.getUser().getId(),
+                new CallEvent(
+                        "OUTGOING_CALL",
+                        call.getId(),
+                        interpreterProfileId,
+                        clientProfileId,
+                        client.getUser().getFirstName(),
+                        interpreter.getUser().getLastName()));
+
+        return call;
     }
 
     @Transactional
-    public Call start(Long callId){
+    public void start(Long callId){
         Call call = get(callId);
+
+        if (!call.canStart()){
+            return;
+        }
         call.start();
         log.info(
                 "Call started callId={}",
                 callId
         );
-        notifyBoth(call, new CallEvent("CALL_STARTED", callId, null));
-        return call;
+        Long clientId = call.getClientProfile().getUser().getId();
+        Long interpreterId = call.getInterpreterProfile().getUser().getId();
+        notifyBoth(call,
+                new CallEvent(
+                        "CALL_STARTED",
+                        callId,
+                        interpreterId,
+                        clientId,
+                        null,
+                        null));
     }
 
     @Transactional
-    public Call end(Long callId){
+    public void end(Long callId){
         Call call = get(callId);
         BigDecimal ratePerSecond = call.getInterpreterProfile().getHourlyRatePerSecond();
 
@@ -83,39 +113,67 @@ public class CallService {
                 "CALL" + callId
         );
         log.info("Call ended callId={} price={}", callId, call.getTotalPrice());
-        notifyBoth(call, new CallEvent("CALL_ENDED", callId, null));
-        return call;
+        notifyBoth(call,
+                new CallEvent(
+                        "CALL_ENDED",
+                        callId,
+                        null,
+                        null,
+                        null,
+                        null));
     }
 
     @Transactional
     public Call accept(Long callId, Long interpreterId){
         Call call = get(callId);
-        require(call, CallState.RINGING);
+        log.info("Call state={}, required={}", call.getState(), CallState.CREATED);
+        require(call, CallState.CREATED);
         requireInterpreter(call, interpreterId);
         call.accept(interpreterId);
         log.info("Call accepted callId={} actorId={}", callId, interpreterId);
-        notifyUser(call.getClientProfile().getId(),
-                new CallEvent("CALL_ACCEPTED", callId, interpreterId));
+        notifyBoth(call,
+                new CallEvent(
+                        "CALL_ACCEPTED",
+                        callId, interpreterId,
+                        call.getClientProfile().getUser().getId(),
+                        call.getClientProfile().getUser().getFirstName(),
+                        call.getInterpreterProfile().getUser().getLastName()));
         return call;
     }
 
     @Transactional
     public Call reject(Long callId, Long actorId){
         Call call = get(callId);
-        call.reject(actorId);
+        Long intId = interpreterProfileRepository.findByUserId(actorId).orElseThrow(UserNotFoundException::new).getId();
+        call.reject(intId);
         log.info("Call rejected callId={} actorId={}", callId, actorId);
 
-        notifyUser(call.getClientProfile().getUser().getId(), new CallEvent("CALL_REJECTED", callId, actorId));
+        notifyBoth(
+                call,
+                new CallEvent(
+                        "CALL_REJECTED",
+                        callId,
+                        actorId,
+                        null,
+                        null,
+                        null));
         return call;
     }
 
     @Transactional
-    public Call cancel(Long callId, Long clientId){
+    public void cancel(Long callId, Long actorId){
         Call call = get(callId);
+        Long clientId = clientRepository.findByUserId(actorId).getId();
         call.cancel(clientId);
         log.info("Call cancelled callId={} actorId={}", callId, clientId);
-        notifyUser(call.getClientProfile().getUser().getId(), new CallEvent("CALL_CANCELLED", callId, clientId));
-        return call;
+        notifyBoth(call,
+                new CallEvent(
+                        "CALL_CANCELLED",
+                        callId,
+                        null,
+                        clientId,
+                        null,
+                        null));
     }
 
     private Call get(Long id) {
@@ -135,9 +193,10 @@ public class CallService {
         }
     }
 
-    private void notifyUser(Long userId, CallEvent event){
+    private void notifyUser(Long username, CallEvent event){
+        log.info("Username={} event={}", username, event);
         simpMessagingTemplate.convertAndSendToUser(
-                userId.toString(),
+                username.toString(),
                 "/queue/calls",
                 event
         );

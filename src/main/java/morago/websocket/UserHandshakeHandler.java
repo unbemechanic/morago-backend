@@ -1,6 +1,5 @@
 package morago.websocket;
 
-import morago.model.User;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;

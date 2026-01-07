@@ -9,5 +9,8 @@ import lombok.Getter;
 public class CallEvent {
     private String type;
     private Long callId;
+    private Long toUserId;
     private Long fromUserId;
+    private String fromName;
+    private String toName;
 }

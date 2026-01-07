@@ -65,6 +65,9 @@ public class Call extends Audit {
         }
         state = to;
     }
+    public boolean canStart() {
+        return state == CallState.ACCEPTED;
+    }
 
     public void start(){
         transition(CallState.ACCEPTED, CallState.STARTED);

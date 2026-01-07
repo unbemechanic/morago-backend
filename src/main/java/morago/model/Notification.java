@@ -30,5 +30,4 @@ public class Notification extends Audit {
     @Column(name = "is_read", nullable = false, length = 100)
     private Boolean isRead;
 
-
 }

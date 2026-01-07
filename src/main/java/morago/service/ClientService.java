@@ -2,7 +2,6 @@ package morago.service;
 
 import lombok.RequiredArgsConstructor;
 import morago.dto.admin.client.InterpreterResponse;
-import morago.dto.admin.interpreter.AdminIPResponseDto;
 import morago.model.interpreter.InterpreterProfile;
 import morago.repository.InterpreterProfileRepository;
 import org.springframework.data.domain.Page;

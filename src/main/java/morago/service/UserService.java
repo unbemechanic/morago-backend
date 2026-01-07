@@ -55,7 +55,6 @@ public class UserService{
         return userRepository.getByPhoneNumber(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
     }
-
     public void createNewUser(RegisterRequest requestUser) {
         if(userRepository.existsByPhoneNumber(requestUser.getPhoneNumber())){
             throw new PhoneNumberAlreadyExistsException();

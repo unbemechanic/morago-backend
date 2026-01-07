@@ -67,6 +67,12 @@ public class JWTService {
     public String extractUsername(String token, TokenEnum tokenType) {
         return tokenParse(token, tokenType).getSubject();
     }
+
+    public Long extractUserId(String token, TokenEnum tokenType) {
+        Claims claims = tokenParse(token, tokenType);
+        return claims.get("userId", Long.class);
+    }
+
     public Set<String> extractUserFromToken(String token, TokenEnum tokenType) {
         Object st = tokenParse(token, tokenType).get("roles", List.class);
         if(st instanceof List<?>list) {
@@ -74,19 +80,6 @@ public class JWTService {
         }
         return Set.of();
     }
-
-    /*private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimResolver.apply(claims);
-    }*/
-
-    /*private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSecret())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }*/
 
     public void validateToken(String token, TokenEnum tokenType) {
         tokenParse(token, tokenType);
@@ -102,9 +95,7 @@ public class JWTService {
                     .parseSignedClaims(token)
                     .getPayload();
             String type = claims.get("type", String.class);
-            /*if (type == null || !type.equalsIgnoreCase(tokenType.name())) {
-                throw new InvalidJwtTokenException();
-            }*/
+
             return claims;
 
         }catch (ExpiredJwtException e){

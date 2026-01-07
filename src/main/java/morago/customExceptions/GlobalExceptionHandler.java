@@ -1,9 +1,7 @@
 package morago.customExceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
-import morago.customExceptions.call.CallTopicExistsException;
-import morago.customExceptions.call.CallTopicNotFoundException;
-import morago.customExceptions.call.NoCallTopicFoundException;
+import morago.customExceptions.call.*;
 import morago.customExceptions.interpreter.NoInterpreterFoundException;
 import morago.customExceptions.language.InvalidLanguageException;
 import morago.customExceptions.language.LanguageExistsException;
@@ -119,6 +117,20 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ){
         return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+    @ExceptionHandler(CallNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleCallNotFoundException(
+            CallNotFoundException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+    @ExceptionHandler(SecurityWebRTCException.class)
+    public ResponseEntity<ApiErrorResponse> handleSecurityWebRTCException(
+            SecurityWebRTCException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
 
     // Refresh token

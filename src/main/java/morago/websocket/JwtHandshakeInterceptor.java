@@ -6,7 +6,6 @@ import morago.enums.TokenEnum;
 import morago.jwt.JWTService;
 import morago.model.User;
 import morago.repository.UserRepository;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -31,19 +30,18 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                                    Map<String, Object> attributes) throws Exception {
 
         if(request instanceof ServletServerHttpRequest servletRequest){
-            log.info("Before handshake");
 
             String token = servletRequest.getServletRequest().getParameter("token");
 
             if(token == null || token.isBlank()){
-                return false;
+                log.error("WebSocket handshake failed: missing token");
+                throw new IllegalArgumentException("Missing token");
             }
 
             String username = jwtService.extractUsername(token, TokenEnum.ACCESS);
 
             User user = userRepository.getByPhoneNumber(username).orElseThrow();
 
-            log.info("Before handshake is complete");
             attributes.put("user", user);
             attributes.put("userId", user.getId());
         }
