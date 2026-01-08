@@ -12,6 +12,7 @@ import morago.customExceptions.role.InvalidRoleException;
 import morago.customExceptions.role.RoleNotFoundException;
 import morago.customExceptions.token.ExpiredJwtTokenException;
 import morago.customExceptions.token.RefreshTokenNotFoundException;
+import morago.customExceptions.wallet.WalletStateException;
 import morago.dto.exceptions.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -125,6 +126,14 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ){
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(CallDurationException.class)
+    public ResponseEntity<ApiErrorResponse> handleCallDurationException(
+            CallDurationException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
     @ExceptionHandler(SecurityWebRTCException.class)
     public ResponseEntity<ApiErrorResponse> handleSecurityWebRTCException(
@@ -259,6 +268,13 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(WalletStateException.class)
+    public ResponseEntity<ApiErrorResponse> handleWalletStateException(
+        WalletStateException ex,
+        HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
 
     // build helper method
     private ResponseEntity<ApiErrorResponse> build(

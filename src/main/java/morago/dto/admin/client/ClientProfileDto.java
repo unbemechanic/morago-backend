@@ -23,7 +23,7 @@ public class ClientProfileDto {
                 .firstName(profile.getUser().getFirstName())
                 .lastName(profile.getUser().getLastName())
                 .phoneNumber(profile.getUser().getPhoneNumber())
-                .balance(profile.getUser().getBalance())
+                .balance(profile.getUser().getWallet().getBalance())
                 .build();
     }
 }

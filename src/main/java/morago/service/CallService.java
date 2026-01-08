@@ -108,7 +108,8 @@ public class CallService {
         call.end(ratePerSecond);
 
         walletService.charge(
-                call.getClientProfile().getUser().getId(),
+                call.getClientProfile().getUser(),
+                call.getInterpreterProfile().getUser(),
                 call.getTotalPrice(),
                 "CALL" + callId
         );

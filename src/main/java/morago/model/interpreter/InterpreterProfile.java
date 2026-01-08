@@ -70,4 +70,17 @@ public class InterpreterProfile extends Audit {
 
     @OneToMany(mappedBy = "interpreterProfile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Call> calls = new ArrayList<>();
+
+
+    public void update(
+            TopikLevel level,
+            BigDecimal hourlyRate,
+            Set<CallTopic> callTopics,
+            Set<Language> languages
+    ){
+        if (level != null) this.level = level;
+        if (hourlyRate != null) this.hourlyRate = hourlyRate;
+        if (callTopics != null) this.callTopics = callTopics;
+        if (languages != null) this.languages = languages;
+    }
 }

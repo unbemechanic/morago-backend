@@ -1,9 +1,9 @@
 package morago.model.wallet;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import morago.customExceptions.wallet.WalletStateException;
 import morago.enums.WalletTransactionType;
 import morago.monitor.Audit;
 
@@ -59,11 +59,11 @@ public class WalletTransaction extends Audit {
             BigDecimal before,
             BigDecimal after
     ) {
-        if (wallet == null) throw new IllegalArgumentException("Wallet is required");
-        if (type == null) throw new IllegalArgumentException("Transaction type is required");
+        if (wallet == null) throw new WalletStateException("Wallet is required");
+        if (type == null) throw new WalletStateException("Transaction type is required");
         if (amount == null || amount.signum() <= 0)
-            throw new IllegalArgumentException("Amount must be positive");
+            throw new WalletStateException("Amount must be positive");
         if (before == null || after == null)
-            throw new IllegalArgumentException("Balances must not be null");
+            throw new WalletStateException("Balances must not be null");
     }
 }

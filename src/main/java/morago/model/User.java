@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import morago.model.client.ClientProfile;
 import morago.model.interpreter.InterpreterProfile;
+import morago.model.wallet.Wallet;
 import morago.monitor.Audit;
 
 import java.math.BigDecimal;
@@ -35,8 +36,8 @@ public class User extends Audit {
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
 
-    @Column(name = "balance")
-    private BigDecimal balance = BigDecimal.ZERO;
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Wallet wallet;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JsonIgnoreProperties("users")

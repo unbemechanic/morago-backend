@@ -74,4 +74,30 @@ public class InterpreterService {
         interpreterProfileRepository.save(interpreterProfile);
         notificationService.notifyAdminUserProfileFinish(user);
     }
+
+    @Transactional
+    public void updateProfile(Long userId, InterpreterProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        InterpreterProfile profile =
+                interpreterProfileRepository.findByUserId(userId)
+                        .orElseThrow(UserNotFoundException::new);
+
+        if(request.getFirstName() != null){
+            user.setFirstName(request.getFirstName());
+        }
+        if(request.getLastName() != null){
+            user.setLastName(request.getLastName());
+        }
+
+        profile.update(
+                request.getLevel(),
+                request.getHourlyRate(),
+                request.getCallTopicIds() == null ? null :
+                        new HashSet<>(callTopicRepository.findAllById(request.getCallTopicIds())),
+                request.getLanguageIds() == null ? null :
+                        new HashSet<>(languageRepository.findAllById(request.getLanguageIds()))
+        );
+    }
 }
