@@ -8,8 +8,6 @@ import lombok.Setter;
 import morago.monitor.Audit;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Setter
 @Getter

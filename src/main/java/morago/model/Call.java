@@ -65,6 +65,9 @@ public class Call extends Audit {
         }
         state = to;
     }
+    public boolean canStart() {
+        return state == CallState.ACCEPTED;
+    }
 
     public void start(){
         transition(CallState.ACCEPTED, CallState.STARTED);
@@ -74,6 +77,9 @@ public class Call extends Audit {
     public void end(BigDecimal ratePerSecond){
         transition(CallState.STARTED, CallState.ENDED);
         callEndedAt = Instant.now();
+        if (callStartedAt == null) {
+            throw new IllegalStateException("Call was never started");
+        }
         duration = callEndedAt.getEpochSecond() - callStartedAt.getEpochSecond();
         totalPrice = ratePerSecond.multiply(BigDecimal.valueOf(duration));
     }
@@ -91,10 +97,10 @@ public class Call extends Audit {
         transition(CallState.CREATED, CallState.REJECTED);
     }
 
-    public void cancel(Long actorId){
+    public void cancel(Long clientId){
         boolean allowed =
-                clientProfile.getId().equals(actorId)
-                        || interpreterProfile.getId().equals(actorId);
+                clientProfile.getId().equals(clientId)
+                        || interpreterProfile.getId().equals(clientId);
 
         if (!allowed) {
             throw new SecurityCallException("Not allowed to cancel call");

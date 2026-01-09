@@ -10,7 +10,6 @@ import morago.model.User;
 import morago.model.token.RefreshToken;
 import morago.repository.UserRepository;
 import morago.repository.token.RefreshTokenRepository;
-import morago.security.CustomUserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 

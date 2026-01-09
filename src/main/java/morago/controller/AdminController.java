@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import morago.dto.admin.*;
+import morago.dto.admin.client.ClientProfileDto;
 import morago.dto.admin.client.CreateClientRequestDto;
 import morago.dto.admin.interpreter.AdminIPResponseDto;
 import morago.dto.admin.interpreter.AdminInterpreterProfileRequestDto;
@@ -137,6 +138,24 @@ public class AdminController {
         auditLog.info("ADMIN_CREATE_CLIENT phoneNumber={}", client.getPhoneNumber());
         adminService.createClientProfile(client);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/user/client/list")
+    public ResponseEntity<Page<ClientProfileDto>> getAllClientProfiles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ){
+        auditLog.info("ADMIN_LIST_Client page={} size={} sortBy={} direction={}",
+                page, size, sortBy, direction);
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<ClientProfileDto> clients = adminService.findAllClientProfiles(pageable);
+        return ResponseEntity.ok(clients);
     }
     @Operation(
             summary = "DELETE user by id",

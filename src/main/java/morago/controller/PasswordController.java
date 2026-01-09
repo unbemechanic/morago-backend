@@ -1,14 +1,12 @@
 package morago.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import morago.dto.authorization.response.token.AccessTokenResponse;
 import morago.dto.password.request.PasswordResetConfirmRequest;
 import morago.dto.password.request.PasswordResetRequest;
 import morago.dto.password.request.PasswordResetVerityRequest;
