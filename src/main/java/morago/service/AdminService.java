@@ -145,7 +145,7 @@ public class AdminService {
 
     public SingleInterpreterProfileDto getInterpreterProfileById(Long id) {
         User user = userRepository.findUserById(id).orElseThrow(UserNotFoundException::new);
-        InterpreterProfile interpreterProfile = interpreterProfileRepository.findById(id).orElseThrow(NoInterpreterFoundException::new);
+        InterpreterProfile interpreterProfile = interpreterProfileRepository.findByUserId(user.getId()).orElseThrow(NoInterpreterFoundException::new);
 
         SingleInterpreterProfileDto dto = new SingleInterpreterProfileDto();
         dto.setFirstName(user.getFirstName());

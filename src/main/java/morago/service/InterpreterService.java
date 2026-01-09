@@ -31,7 +31,7 @@ public class InterpreterService {
     private final NotificationService notificationService;
 
     public void updateIsActive(StatusUpdateDto status, Long userId){
-        InterpreterProfile profile = interpreterProfileRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        InterpreterProfile profile = interpreterProfileRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
         profile.setIsActive(status.getStatus());
         interpreterProfileRepository.save(profile);
     }

@@ -80,7 +80,8 @@ public class CallSignalingController {
     public void ice(@Payload WebRTCSignalingMessage message, Principal principal) {
         Call call = callRepository.findById(message.getCallId()).orElseThrow(CallNotFoundException::new);
 
-        Long targetUserId = principal.getName().equals(call.getClientProfile().getUser().getId())
+        Long senderId = Long.valueOf(principal.getName());
+        Long targetUserId = senderId.equals(call.getClientProfile().getUser().getId())
                 ? call.getInterpreterProfile().getUser().getId() : call.getClientProfile().getUser().getId();
         messagingTemplate.convertAndSendToUser(
                 targetUserId.toString(),
