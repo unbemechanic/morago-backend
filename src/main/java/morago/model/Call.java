@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import morago.customExceptions.call.InvalidCallStateException;
 import morago.customExceptions.call.SecurityCallException;
 import morago.enums.CallState;
@@ -13,8 +14,11 @@ import morago.model.interpreter.InterpreterProfile;
 import morago.monitor.Audit;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.Instant;
 
+@Slf4j
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -75,13 +79,26 @@ public class Call extends Audit {
     }
 
     public void end(BigDecimal ratePerSecond){
-        transition(CallState.STARTED, CallState.ENDED);
-        callEndedAt = Instant.now();
         if (callStartedAt == null) {
             throw new IllegalStateException("Call was never started");
         }
-        duration = callEndedAt.getEpochSecond() - callStartedAt.getEpochSecond();
-        totalPrice = ratePerSecond.multiply(BigDecimal.valueOf(duration));
+
+        if (state == CallState.ENDED) {
+            return;
+        }
+
+        transition(CallState.STARTED, CallState.ENDED);
+        callEndedAt = Instant.now();
+
+        duration = Duration.between(callStartedAt, callEndedAt).getSeconds();
+        if (duration <= 0) {
+            throw new IllegalStateException("Invalid call duration");
+        }
+
+        totalPrice = ratePerSecond
+                .multiply(BigDecimal.valueOf(duration))
+                .setScale(0, RoundingMode.HALF_UP);
+        log.info("Call ended in {} seconds", duration);
     }
     public void accept(Long actorId){
         if (!interpreterProfile.getId().equals(actorId)) {

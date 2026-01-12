@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import morago.customExceptions.UserNotFoundException;
 import morago.dto.notification.NotificationDto;
 import morago.enums.NotificationType;
+import morago.enums.RoleEnum;
 import morago.model.Notification;
 import morago.model.User;
 import morago.repository.NotificationRepository;
@@ -40,5 +41,33 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId).orElseThrow(UserNotFoundException::new);
         notification.setIsRead(true);
         notificationRepository.save(notification);
+    }
+    // ADMIN NOTIFICATION HELPER METHODS
+    public void notifyAdminUserCreated(User user) {
+        Long adminId = findAdminId();
+
+        notifyUser(
+                adminId,
+                NotificationType.ADMIN_NEW_USER,
+                "New user registered: " + user.getPhoneNumber()
+        );
+    }
+
+    public void notifyAdminUserProfileFinish(User user) {
+        Long adminId = findAdminId();
+
+        notifyUser(
+                adminId,
+                NotificationType.PROFILE_COMPLETED,
+                "User finishied thier profile: " + user.getPhoneNumber()
+        );
+    }
+
+    public Long findAdminId() {
+        return userRepository
+                .findFirstByRoles_Name(RoleEnum.ADMIN.name())
+                .orElseThrow(() -> new RuntimeException("Admin not found"))
+                .getId();
+
     }
 }

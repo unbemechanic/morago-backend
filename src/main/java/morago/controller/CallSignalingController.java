@@ -22,6 +22,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+
 import java.security.Principal;
 
 @Slf4j
@@ -78,9 +79,15 @@ public class CallSignalingController {
     @MessageMapping("/webrtc.ice")
     @Transactional
     public void ice(@Payload WebRTCSignalingMessage message, Principal principal) {
+        callService.validateParticipants(message.getCallId(), principal);
+
         Call call = callRepository.findById(message.getCallId()).orElseThrow(CallNotFoundException::new);
 
-        Long targetUserId = principal.getName().equals(call.getClientProfile().getUser().getId())
+        Long senderId = Long.valueOf(principal.getName());
+
+
+
+        Long targetUserId = senderId.equals(call.getClientProfile().getUser().getId())
                 ? call.getInterpreterProfile().getUser().getId() : call.getClientProfile().getUser().getId();
         messagingTemplate.convertAndSendToUser(
                 targetUserId.toString(),
@@ -109,7 +116,9 @@ public class CallSignalingController {
     }
 
     @MessageMapping("/call.end")
-    public void end(@Payload Long id){
+    public void end(@Payload Long id, Principal principal) {
+        callService.validateParticipants(id, principal);
+        log.info("Call {} ended, principle={}", id, principal.getName());
         callService.end(id);
     }
 

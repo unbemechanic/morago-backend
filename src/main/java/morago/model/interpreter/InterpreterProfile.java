@@ -1,10 +1,7 @@
 package morago.model.interpreter;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import morago.enums.TopikLevel;
 import morago.model.Call;
 import morago.model.CallTopic;
@@ -20,6 +17,7 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "interpreter_profile")
@@ -72,4 +70,17 @@ public class InterpreterProfile extends Audit {
 
     @OneToMany(mappedBy = "interpreterProfile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Call> calls = new ArrayList<>();
+
+
+    public void update(
+            TopikLevel level,
+            BigDecimal hourlyRate,
+            Set<CallTopic> callTopics,
+            Set<Language> languages
+    ){
+        if (level != null) this.level = level;
+        if (hourlyRate != null) this.hourlyRate = hourlyRate;
+        if (callTopics != null) this.callTopics = callTopics;
+        if (languages != null) this.languages = languages;
+    }
 }

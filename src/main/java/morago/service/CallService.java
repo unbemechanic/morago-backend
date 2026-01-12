@@ -3,6 +3,7 @@ package morago.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import morago.customExceptions.ApiException;
 import morago.customExceptions.UserNotFoundException;
 import morago.customExceptions.call.CallTopicNotFoundException;
 import morago.enums.CallState;
@@ -16,10 +17,13 @@ import morago.repository.InterpreterProfileRepository;
 import morago.repository.UserRepository;
 import morago.repository.call.CallRepository;
 import morago.repository.call.CallTopicRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.security.Principal;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -108,7 +112,8 @@ public class CallService {
         call.end(ratePerSecond);
 
         walletService.charge(
-                call.getClientProfile().getUser().getId(),
+                call.getClientProfile().getUser(),
+                call.getInterpreterProfile().getUser(),
                 call.getTotalPrice(),
                 "CALL" + callId
         );
@@ -124,7 +129,7 @@ public class CallService {
     }
 
     @Transactional
-    public Call accept(Long callId, Long interpreterId){
+    public void accept(Long callId, Long interpreterId){
         Call call = get(callId);
         log.info("Call state={}, required={}", call.getState(), CallState.CREATED);
         require(call, CallState.CREATED);
@@ -138,11 +143,10 @@ public class CallService {
                         call.getClientProfile().getUser().getId(),
                         call.getClientProfile().getUser().getFirstName(),
                         call.getInterpreterProfile().getUser().getLastName()));
-        return call;
     }
 
     @Transactional
-    public Call reject(Long callId, Long actorId){
+    public void reject(Long callId, Long actorId){
         Call call = get(callId);
         Long intId = interpreterProfileRepository.findByUserId(actorId).orElseThrow(UserNotFoundException::new).getId();
         call.reject(intId);
@@ -157,7 +161,6 @@ public class CallService {
                         null,
                         null,
                         null));
-        return call;
     }
 
     @Transactional
@@ -191,6 +194,28 @@ public class CallService {
         if (!call.getInterpreterProfile().getId().equals(interpreterId)) {
 
         }
+    }
+
+    public void validateParticipants(Long callId, Principal principal) {
+        if (principal == null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "NOT AUTHORIZED", "Not authenticated user");
+        }
+
+        Call call = get(callId);
+
+        String username = principal.getName();
+
+        log.info("Validating participants for callId={} principal={}", callId, username);
+
+        boolean isParticipant = Objects.equals(call.getClientProfile().getUser().getId(), Long.valueOf(username)) ||
+                Objects.equals(call.getInterpreterProfile().getUser().getId(), Long.valueOf(username));
+
+
+        if (!isParticipant) {
+            log.warn("User {} attempted to access call {} without permission", username, callId);
+            throw new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "You are not authorized to access this call");
+        }
+
     }
 
     private void notifyUser(Long username, CallEvent event){

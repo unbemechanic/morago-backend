@@ -32,7 +32,7 @@ public class WebRTCService {
 
         WebRTCSignalingMessage message = WebRTCSignalingMessage.builder()
                 .callId(Long.valueOf(callId))
-                .frontUserId(userId)
+                .fromUserId(userId)
                 .type("PEER_STARTED")
                 .build();
 
@@ -49,7 +49,7 @@ public class WebRTCService {
 
         WebRTCSignalingMessage message = WebRTCSignalingMessage.builder()
                 .callId(Long.valueOf(callId))
-                .frontUserId(userId)
+                .fromUserId(userId)
                 .type("PEER_CLOSED")
                 .build();
 

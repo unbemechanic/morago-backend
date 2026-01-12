@@ -23,6 +23,7 @@ import morago.dto.admin.interpreter.SingleInterpreterProfileDto;
 import morago.dto.call.topic.CallTopicDto;
 import morago.dto.language.LanguageRequestDto;
 import morago.dto.notification.NotificationDto;
+import morago.enums.NotificationType;
 import morago.mapper.CallMapper;
 import morago.mapper.UserMapper;
 import morago.mapper.WithdrawalMapper;
@@ -68,6 +69,7 @@ public class AdminService {
     private final DepositRepository depositRepository;
     private final ClientRepository clientRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     // Get all users
     public Page<UserResponseDto> findAllUsers(Pageable pageable) {
@@ -143,7 +145,7 @@ public class AdminService {
 
     public SingleInterpreterProfileDto getInterpreterProfileById(Long id) {
         User user = userRepository.findUserById(id).orElseThrow(UserNotFoundException::new);
-        InterpreterProfile interpreterProfile = interpreterProfileRepository.findById(id).orElseThrow(NoInterpreterFoundException::new);
+        InterpreterProfile interpreterProfile = interpreterProfileRepository.findByUserId(user.getId()).orElseThrow(NoInterpreterFoundException::new);
 
         SingleInterpreterProfileDto dto = new SingleInterpreterProfileDto();
         dto.setFirstName(user.getFirstName());
@@ -194,6 +196,17 @@ public class AdminService {
 
     public Page<ClientProfileDto> findAllClientProfiles(Pageable pageable) {
         return clientRepository.findAll(pageable).map(ClientProfileDto::from);
+    }
+
+    @Transactional
+    public void updateUserIsVerified(Long id, boolean isVerified) {
+        User user = userRepository.findUserById(id).orElseThrow(UserNotFoundException::new);
+        user.setIsVerified(isVerified);
+        notificationService.notifyUser(
+                id,
+                NotificationType.PROFILE_VERIFIED,
+                "Your profile has been verified."
+        );
     }
 
     // Call topics
@@ -309,6 +322,11 @@ public class AdminService {
 
     }
 
+    public List<NotificationDto> getAdminUnreadNotifications(Long userId){
+        return notificationRepository.findByUser_IdAndUser_Roles_NameAndIsReadFalseOrderByCreatedAtDesc(userId, "ADMIN").stream()
+                .map(NotificationDto::from)
+                        .toList();
+    }
     // Aggregation method
     private AdminIPResponseDto buildAdminInterpreterDto(InterpreterProfile profile){
         User user = profile.getUser();

@@ -3,16 +3,13 @@ package morago.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import morago.model.client.ClientProfile;
 import morago.model.interpreter.InterpreterProfile;
+import morago.model.wallet.Wallet;
 import morago.monitor.Audit;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,6 +17,7 @@ import java.util.Set;
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends Audit {
@@ -38,8 +36,8 @@ public class User extends Audit {
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
 
-    @Column(name = "balance")
-    private BigDecimal balance = BigDecimal.ZERO;
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Wallet wallet;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JsonIgnoreProperties("users")

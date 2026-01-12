@@ -10,7 +10,7 @@ import lombok.*;
 public class WebRTCSignalingMessage {
     private String type;
     private Long callId;
-    private String frontUserId;
+    private String fromUserId;
     private String toUserId;
     private Object sdp;
     private Object candidate;

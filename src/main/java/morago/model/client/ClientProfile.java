@@ -28,7 +28,6 @@ public class ClientProfile extends Audit {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private BigDecimal balance = BigDecimal.ZERO;
     @Column(name = "is_active")
     private Boolean isActive;
 

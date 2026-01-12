@@ -3,6 +3,7 @@ package morago.customExceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import morago.customExceptions.call.*;
 import morago.customExceptions.interpreter.NoInterpreterFoundException;
+import morago.customExceptions.interpreter.ProfileExistsException;
 import morago.customExceptions.language.InvalidLanguageException;
 import morago.customExceptions.language.LanguageExistsException;
 import morago.customExceptions.password.*;
@@ -11,6 +12,7 @@ import morago.customExceptions.role.InvalidRoleException;
 import morago.customExceptions.role.RoleNotFoundException;
 import morago.customExceptions.token.ExpiredJwtTokenException;
 import morago.customExceptions.token.RefreshTokenNotFoundException;
+import morago.customExceptions.wallet.WalletStateException;
 import morago.dto.exceptions.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -89,17 +91,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, message, request);
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<ApiErrorResponse> handleUnexpected(
-//            Exception ex,
-//            HttpServletRequest request
-//    ) {
-//        return build(
-//                HttpStatus.INTERNAL_SERVER_ERROR,
-//                "Unexpected server error",
-//                request
-//        );
-//    }
+
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiErrorResponse> handleBadCredentials(
@@ -124,6 +116,21 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ){
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(CallDurationException.class)
+    public ResponseEntity<ApiErrorResponse> handleCallDurationException(
+            CallDurationException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiException(
+            ApiException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
     @ExceptionHandler(SecurityWebRTCException.class)
     public ResponseEntity<ApiErrorResponse> handleSecurityWebRTCException(
@@ -250,6 +257,21 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(ProfileExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleProfileExistsException(
+            ProfileExistsException ex,
+            HttpServletRequest request
+    ){
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(WalletStateException.class)
+    public ResponseEntity<ApiErrorResponse> handleWalletStateException(
+        WalletStateException ex,
+        HttpServletRequest request
+    ){
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
 
     // build helper method
     private ResponseEntity<ApiErrorResponse> build(
