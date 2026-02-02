@@ -60,6 +60,10 @@ public class WebSecurityConfig  {
             "/ws/iframe.html"
     };
 
+    private static final String[] TEST_ENDPOINTS = {
+            "/actuator/**",
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -70,6 +74,7 @@ public class WebSecurityConfig  {
                 .authorizeHttpRequests(r -> r
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(WS_ENDPOINTS).permitAll()
+                        .requestMatchers(TEST_ENDPOINTS).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/client/**").hasRole("CLIENT")
                         .requestMatchers("/interpreter/**").hasRole("INTERPRETER")
