@@ -23,6 +23,7 @@ import morago.dto.admin.interpreter.SingleInterpreterProfileDto;
 import morago.dto.call.topic.CallTopicDto;
 import morago.dto.language.LanguageRequestDto;
 import morago.dto.notification.NotificationDto;
+import morago.dto.page.PageDto;
 import morago.enums.NotificationType;
 import morago.mapper.CallMapper;
 import morago.mapper.UserMapper;
@@ -41,6 +42,7 @@ import morago.repository.*;
 import morago.repository.call.CallRepository;
 import morago.repository.call.CallTopicRepository;
 import morago.utils.PasswordValidator;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -66,18 +68,23 @@ public class AdminService {
     private final CallMapper callMapper;
     private final WithdrawalRequestMapper withdrawalRequestMapper;
     private final WithdrawalMapper withdrawalMapper;
-    private final DepositRepository depositRepository;
     private final ClientRepository clientRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationService notificationService;
 
+
     // Get all users
-    public Page<UserResponseDto> findAllUsers(Pageable pageable) {
-        Page<User> allUsers = userRepository.findAll(pageable);
+    @Cacheable(
+            value = "users",
+            key = "'page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize + ':sort:' + #pageable.sort.toString()"
+    )
+    public PageDto<UserResponseDto> findAllUsers(Pageable pageable) {
+        Page<User> allUsers = userRepository.findAllUsers(pageable);
         if (allUsers.isEmpty()) {
             throw new UserNotFoundException();
         }
-        return allUsers.map(userMapper::toUserResponseDto);
+        Page<UserResponseDto> dtoPage = allUsers.map(userMapper::toUserResponseDto);
+        return new PageDto<>(dtoPage);
     }
 
     public User findUserById(Long id) {

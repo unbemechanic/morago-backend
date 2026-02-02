@@ -18,6 +18,7 @@ import morago.dto.admin.interpreter.SingleInterpreterProfileDto;
 import morago.dto.call.topic.CallTopicDto;
 import morago.dto.call.topic.UpdateCallTopicRequest;
 import morago.dto.language.LanguageRequestDto;
+import morago.dto.page.PageDto;
 import morago.mapper.UserMapper;
 import morago.model.CallTopic;
 import morago.model.interpreter.Language;
@@ -71,8 +72,8 @@ public class AdminController {
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<UserResponseDto> getAllUsers =  adminService.findAllUsers(pageable);
-        return ResponseEntity.ok(getAllUsers);
+        PageDto<UserResponseDto> cached =  adminService.findAllUsers(pageable);
+        return ResponseEntity.ok(cached.toPage());
     }
 
     @GetMapping("/user/{id}")

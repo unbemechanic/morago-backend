@@ -54,7 +54,11 @@ public class JWTService {
     }
 
     public String generateRefreshToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh_token");
+        claims.put("jti", UUID.randomUUID().toString());
         return Jwts.builder()
+                .claims(claims)
                 .issuer(jwtProperties.getIssuer())
                 .subject(user.getPhoneNumber())
                 .claim("userId", user.getId())
